@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LKS Cloud Computing - Task Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f4; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input { padding: 10px; width: 70%; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: #0056b3; }
+        ul { list-style: none; padding: 0; margin-top: 20px; }
+        li { background: #eee; margin-bottom: 5px; padding: 10px; border-radius: 4px; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Daftar Tugas (LKS Cloud)</h2>
+    
+    <input type="text" id="taskInput" placeholder="Ketik tugas baru...">
+    <button onclick="addTask()">Tambah</button>
+
+    <ul id="taskList"></ul>
+</div>
+
+<script>
+    // PENTING: Ganti URL di bawah ini dengan Invoke URL dari API Gateway kamu (Stage)
+    const API_URL = "https://ceuo74q5d7.execute-api.us-east-1.amazonaws.com/test";
+
+    // Fungsi untuk mengambil data dari DynamoDB (Lewat API Gateway -> Lambda)
+    async function fetchTasks() {
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            const listElement = document.getElementById('taskList');
+            listElement.innerHTML = "";
+            
+            data.forEach(task => {
+                const li = document.createElement('li');
+                li.textContent = task.taskName; // Sesuai dengan field di Lambda
+                listElement.appendChild(li);
+            });
+        } catch (error) {
+            console.error("Gagal mengambil data:", error);
+        }
+    }
+
+    // Fungsi untuk menambah data ke DynamoDB
+    async function addTask() {
+        const taskInput = document.getElementById('taskInput');
+        if (!taskInput.value) return alert("Isi tugas dulu!");
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ task_name: taskInput.value })
+            });
+
+            if (response.ok) {
+                taskInput.value = "";
+                fetchTasks(); // Refresh list setelah nambah
+            }
+        } catch (error) {
+            console.error("Gagal menambah data:", error);
+        }
+    }
+
+    // Jalankan fetch saat halaman dibuka
+    fetchTasks();
+</script>
+
+</body>
+</html>
