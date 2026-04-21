@@ -2,11 +2,10 @@ version: 1
 frontend:
   phases:
     build:
-      commands:
-        - echo "Ini aplikasi backend Lambda, tidak ada build frontend."
+      commands: []
   artifacts:
     baseDirectory: /
     files:
-      - '**/*'
+      - 'index.html'
   cache:
     paths: []
